@@ -103,7 +103,7 @@ export const GetAllTasks = async (req, res) => {
     },{Todos:1});
    
     if (!Tasks  ) {
-      return res.json({ message: "NO tasks added to the todo list" });
+      return res.json({ message: "NO tasks added to the todo list",status:false });
     }
     return res.json({
       message: "Data retreived sucessfully",
