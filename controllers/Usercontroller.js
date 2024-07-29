@@ -233,7 +233,7 @@ export const FinishTask = async (req, res) => {
   if (!FinishedTask.modifiedCount) {
     return res.json({ message: "Task or user not found", status: false });
   }
-  return res.json({message:"Task Updated Sucessfully",status:true})
+  return res.status(200).json({message:"Task Updated Sucessfully",status:true})
 };
 
 
@@ -282,7 +282,7 @@ export const SearchTask = async (req, res) => {
       });
     }
 
-    return res.json({
+    return res.status(200).json({
       message: "Tasks fetched successfully",
       tasks: Query_result,
       status: true,
@@ -305,6 +305,6 @@ export const getTask=async(req,res)=>{
     if(!Task){
       return res.json({message:"Task not found",status:false})
     }
-    return res.json({message:"Data fetched sucessfully",status:true,Task:Task})
+    return res.status(200).json({message:"Data fetched sucessfully",status:true,Task:Task})
 }
 
