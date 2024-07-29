@@ -9,6 +9,6 @@ export const ValidateLogin=(req,res,next)=>{
 export const ValidateRegister=(req,res,next)=>{
     
     const{error}=RegisterSchema.validate(req.body)
-    if(error) return res.json({Message:"Email and Password is required",Error:error})
+    if(error) return res.json({Message:error.message,status:false})
         next()  
 }

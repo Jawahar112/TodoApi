@@ -8,7 +8,7 @@ app.use(express.json());
 
 app.use('/api/',Router)
 app.use('*', function(req, res){
-    res.status(404).json('Page Not Found 404');
+    res.status(404).json({message:'Page Not Found 404'});
   });
 
 const PORT=process.env.PORT || 3000
