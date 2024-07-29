@@ -173,7 +173,7 @@ export const deleteTask = async (req, res) => {
       { $pull: { Todos: { _id: taskId } } }
     );
     if (!deletedTask) {
-      throw new Error("task deletion was unsucessfull");
+     return res.json({message:"Task deletion was not sucessfull"})
     }
     return res.json({ Message: "Task deleted sucessfully", status: true });
   } catch (error) {
