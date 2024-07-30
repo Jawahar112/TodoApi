@@ -15,5 +15,5 @@ const PORT=process.env.PORT || 3000
 connectDB()
 app.listen(PORT,(err)=>{
     if(err)console.log(err);
-    console.log(`server Running On Server http://localhost:${PORT}`);
+    console.log(`Server Running On Server http://localhost:${PORT} or http://127.0.0.1:3000 `);
 })

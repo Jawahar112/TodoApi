@@ -49,7 +49,7 @@ export const Login = async (req, res) => {
     if (user.Password !== Password) {
       return res.json({ Message: "Invalid Email Or Password", status: false });
     }
-    const token = await GenerateToken({ UserId: user._id });
+    const token = await GenerateToken({ UserId: user._id },{ expiresIn: '1h' })
     return res.json({
       Message: "Token generated sucessfully",
       Token: token,
@@ -266,7 +266,7 @@ export const deleteTask = async (req, res) => {
       .status(500)
       .json({ Error: "Internal Server Error", message: error.message });
   }
-};
+}
 
 
 
@@ -276,33 +276,32 @@ export const EditTask = async (req, res) => {
  
    const { taskId } = req.params;
    const fields = req.query;
-   console.log(fields);
+  
    if (!fields || !Object.keys(fields).length) {
      return res.json({
-       message: "Atlease one field is required",
+       message: "Atleast one field is required",
        status: false,
      });
    }
    const ToupdateFields = {};
- 
-   for (const key in fields) {
+     for (const key in fields) {
      ToupdateFields[`Todos.$.${key}`] = fields[key];
    }
  
    const UpdatedTask = await TodoModel.updateOne(
      {
        User: mongoose.Types.ObjectId.createFromHexString(UserId),
-       "Todos._id": taskId,
+       "Todos._id": taskId
      },
      {
-       $set: ToupdateFields,
+       $set: ToupdateFields
      }
    );
  
    if (!UpdatedTask.modifiedCount) {
      return res.json({
        message: "Task not found or Already updated",
-       status: false,
+       status: false
      });
    }
    return res.json({ message: "Task updated sucessfully", status: true });
@@ -351,7 +350,6 @@ export const SearchTask = async (req, res) => {
     const StartDate = new Date(From);
 
     const EndDate = new Date(To);
-
     EndDate.setHours(23);
     EndDate.setMinutes(59);
     EndDate.setSeconds(59);
@@ -382,7 +380,7 @@ export const SearchTask = async (req, res) => {
       }
     ]);
 
-    if (!Query_result || Query_result.length === 0) {
+    if (!Query_result || !Query_result.length ) {
       return res.json({
         message: "No tasks found in that time",
         status: false,
@@ -406,7 +404,7 @@ export const SearchTask = async (req, res) => {
 export const getTask = async (req, res) => {         
  try {
    const UserId = req.UserId;
-   
+
    const { taskId } = req.params;
  
    const Task = await TodoModel.findOne(
@@ -415,7 +413,7 @@ export const getTask = async (req, res) => {
        "Todos._id": taskId,
      },
      { Todos: 1 }
-   );
+   )
    if (!Task) {
      return res.json({ message: "Task not found", status: false });
    }
@@ -425,6 +423,6 @@ export const getTask = async (req, res) => {
  } catch (error) {
   return res
       .status(500)
-      .json({ Error: "Internal Server 500  Error", message: error.message });
+      .json({ Error: "Internal Server Error", message: error.message });
  }
-};
+}
