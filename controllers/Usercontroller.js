@@ -3,6 +3,7 @@ import TodoModel from "../models/Todos.js";
 import { GenerateToken } from "../helpers/Jwt_helper.js";
 import mongoose from "mongoose";
 import moment from "moment";
+import { transporter } from "../configs/nodemailer.js";
 export const Register = async (req, res) => {
   try {
     const { Email, Password } = req.body;
@@ -49,7 +50,7 @@ export const Login = async (req, res) => {
         .json({ Message: "Invalid Email Or Password", status: false });
     }
     const token = await GenerateToken({
-      options: { expiresIn: "1h" },
+      options: { expiresIn: "5h" },
       payload:{UserId:user._id}
      
     });
@@ -68,16 +69,13 @@ export const Login = async (req, res) => {
 export const Addtask = async (req, res) => {
   try {
     const UserId = req.UserId;
-
-
-
    const { Task, Time, Category } = req.body;
    const date=new Date(Time)
-   const date2=new Date()
-   const date3=moment().utc(date2).utcOffset("+5:30")
-   
- if(date<date3){
-  return res.json({Message:"Date should be valid"})
+   const UtcDate=new Date()
+   const currentDate=moment().utc(UtcDate).utcOffset("+5:30")
+
+if(date<currentDate){
+  return res.json({Message:"Date should be valid",Status:false})
  }
     const TodoList = await TodoModel.findOne({ User: UserId });
     const IsAdded = await TodoModel.findOne({
@@ -325,26 +323,131 @@ export const FinishTask = async (req, res) => {
   try {
     const UserId = req.UserId;
     const { taskId } = req.params;
+    const User=await UserModel.findOne({_id:UserId})
+    if(!User){
+      return res.json({Message:"User Not Found",Status:false})
+    }
+   const ReceiverEmail=User.Email;
+  
     const FinishedTask = await TodoModel.updateOne(
       {
         User: mongoose.Types.ObjectId.createFromHexString(UserId),
         "Todos._id": taskId,
       },
       { $set: { "Todos.$.Completed": true } }
-    );
+    )
 
     if (!FinishedTask.modifiedCount) {
-      return res.json({ message: "Task or user not found", status: false });
+      return res.json({ message: "Task Already Finished", status: false });
     }
+    const task = await TodoModel.findOne(
+      { User: mongoose.Types.ObjectId.createFromHexString(UserId), "Todos._id": taskId },
+      { "Todos.$": 1 } // Return only the matched task
+    );
+
+   const Taskname=task.Todos[0].Task
+   const MailOptions = {
+    from: 'bharathijawahar583@gmail.com',
+    to:ReceiverEmail,
+    subject: ' Task Completed!',
+    html: `
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+              background-color: #f9f9f9;
+            }
+            .container {
+              width: 100%;
+              max-width: 600px;
+              margin: 0 auto;
+              background: #ffffff;
+              border: 1px solid #dddddd;
+              border-radius: 8px;
+              overflow: hidden;
+            }
+            .header {
+              background: #007bff;
+              color: #ffffff;
+              padding: 20px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .content {
+              padding: 20px;
+            }
+            .content h2 {
+              font-size: 20px;
+              color: #333333;
+            }
+            .content p {
+              font-size: 16px;
+              color: #666666;
+              line-height: 1.5;
+            }
+            .footer {
+              background: #f1f1f1;
+              color: #888888;
+              padding: 10px;
+              text-align: center;
+              font-size: 14px;
+            }
+            .button {
+              display: inline-block;
+              padding: 10px 20px;
+              font-size: 16px;
+              color: #ffffff;
+              background: #007bff;
+              text-decoration: none;
+              border-radius: 4px;
+            }
+            .button:hover {
+              background: #0056b3;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Task Completed!</h1>
+            </div>
+            <div class="content">
+              <h2>Congratulations!</h2>
+              <p>You have successfully completed the task: <strong>${Taskname}</strong>.</p>
+              <p>Great job on finishing this task! Keep up the excellent work.</p>
+             
+            </div>
+            <div class="footer">
+             
+              <p>If you have any questions, please contact support at <a href="mailto:support@example.com">support@example.com</a>.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `
+  };
+  
+  const SentMail=await transporter.sendMail(MailOptions);
+  
+  if(!SentMail){
+    return res.json({Message:"Email sending failed",Status:false})
+  }
+
     return res
       .status(200)
-      .json({ message: "Task Updated Sucessfully", status: true });
+      .json({ message: "Task Updated and sent confirmation mail to user", status: true });
   } catch (error) {
     return res
       .status(500)
       .json({ Error: "Internal Server 500  Error", message: error.message });
   }
-};
+}
 
 export const SearchTask = async (req, res) => {
   try {
@@ -352,10 +455,7 @@ export const SearchTask = async (req, res) => {
     let { From, To } = req.query;
     const StartDate = new Date(From);
     const EndDate = new Date(To);
-    EndDate.setHours(23);
-    EndDate.setMinutes(59);
-    EndDate.setSeconds(59);
-    EndDate.setMilliseconds(999);
+    EndDate.setHours(23,59,29,999)
 
     const Query_result = await TodoModel.aggregate([
       {

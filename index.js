@@ -1,7 +1,7 @@
-import express from "express";
+import express from "express"
 import 'dotenv/config'
-import { connectDB } from "./configs/Mongodbconfig.js";
-import  Router  from "./Routes/userRouter.js";
+import { connectDB } from "./configs/Mongodbconfig.js"
+import  Router  from "./Routes/userRouter.js"
 const app=express()
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

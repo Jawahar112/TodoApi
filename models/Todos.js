@@ -18,6 +18,7 @@ const Todo_schema = new Schema({
   Completed: {
     type: Boolean,
     default: false,
+    
   },
 });
 const Todos_schema = new Schema({
