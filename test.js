@@ -1,7 +1,10 @@
+import moment from "moment";
 
+// Create a moment object with the current date and time in UTC
+const utcDate = moment()
 
-const ob=new Object()
-ob.name="name"
+// Format the UTC date as an ISO 8601 string
+console.log(utcDate.toISOString());
 
-const res=Object.entries(ob)
-console.log(res);
+// Format the UTC date in a more human-readable format
+console.log(utcDate.format('YYYY-MM-DDTHH:mm:ss'));

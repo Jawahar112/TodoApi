@@ -6,8 +6,7 @@ import { VerifyUser } from "../middlewares/JWT_verify.js";
  import { ValidateLogin,ValidateRegister } from "../middlewares/Validations/Joi/Uservalidations.js";
 Router.route('/register').post(ValidateRegister,Register)
 Router.route('/login').post(ValidateLogin,Login)
-Router.route('/tasks').post(VerifyUser,Addtask)
-Router.route('/tasks').get(VerifyUser,GetAllTasks)
+Router.route('/tasks').post(VerifyUser,Addtask).get(VerifyUser,GetAllTasks)
 Router.route('/completedTasks').get(VerifyUser,GetFinisedTasks)
 Router.route('/pendingTasks').get(VerifyUser,GetPendingTasks)
 Router.route('/delete/:taskId').delete(VerifyUser,deleteTask)
