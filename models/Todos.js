@@ -18,7 +18,11 @@ const Todo_schema = new Schema({
   Completed: {
     type: Boolean,
     default: false,
+    
   },
+  softdel:{
+    type:Boolean
+  }
 });
 const Todos_schema = new Schema({
   User: {

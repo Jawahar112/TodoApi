@@ -1,7 +1,7 @@
-import express from "express";
+import express from "express"
 import 'dotenv/config'
-import { connectDB } from "./configs/Mongodbconfig.js";
-import  Router  from "./Routes/userRouter.js";
+import { connectDB } from "./configs/Mongodbconfig.js"
+import  Router  from "./Routes/userRouter.js"
 const app=express()
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -15,5 +15,5 @@ const PORT=process.env.PORT || 3000
 connectDB()
 app.listen(PORT,(err)=>{
     if(err)console.log(err);
-    console.log(`server Running On Server http://localhost:${PORT}`);
+    console.log(`Server Running On Server http://localhost:${PORT} or http://127.0.0.1:${PORT}`);
 })

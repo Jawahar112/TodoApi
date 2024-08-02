@@ -9,6 +9,5 @@ const UserSchema=new Schema({
         required:true,
         type:String
     }
-    
 })
 export default mongoose.model('Users',UserSchema)
