@@ -82,7 +82,7 @@ export const Addtask = async (req, res) => {
       Todos: { $elemMatch: { Time: date } }
     });
     if(isAdded){
-      return res.json({message:"Task Already added to that time",status:false})
+      return res.status(409).json({message:"Task Already added to that time",status:false})
     }
     const currentDate = moment().utcOffset("+5:30");
 
@@ -106,7 +106,7 @@ export const Addtask = async (req, res) => {
 
     if (isValidTask) {
       return res
-        .status(400)
+        .status(409)
         .json({
           message: "There is a task already added before or after few minutes",
           status: false,
@@ -223,13 +223,14 @@ export const GetFinisedTasks = async (req, res) => {
     ]);
 
     if (!Tasks || !Tasks.length) {
-      return res.json({ message: "No finished tasks", status: false });
+      return res.status(200).json({ message: "No finished tasks", status: false });
     }
     return res.status(200).json({
       message: "Data retreived sucessfully",
       status: true,
       tasks: Tasks,
-    });
+    })
+
   } catch (error) {
     return res
       .status(500)
@@ -355,7 +356,7 @@ export const FinishTask = async (req, res) => {
     );
 
     if (!FinishedTask.modifiedCount) {
-      return res.json({ message: "Task Already Finished", status: false });
+      return res.status(409).json({ message: "Task Already Finished", status: false });
     }
     const task = await TodoModel.findOne(
       {
