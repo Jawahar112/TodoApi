@@ -2,10 +2,12 @@ import express from "express"
 import 'dotenv/config'
 import { connectDB } from "./configs/Mongodbconfig.js"
 import  Router  from "./Routes/userRouter.js"
+import Handlebars from "handlebars"
 const app=express()
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
+app.set('view engine','handlebars')
 app.use('/api/',Router)
 app.use('*', function(req, res){
     res.status(404).json({message:'Page Not Found 404'});

@@ -4,6 +4,9 @@ import { GenerateToken } from "../helpers/Jwt_helper.js";
 import mongoose from "mongoose";
 import moment from "moment";
 import { transporter } from "../configs/nodemailer.js";
+import Handlebars from "handlebars";
+import fs from 'fs/promises'
+
 export const Register = async (req, res) => {
   try {
     const { Email, Password } = req.body;
@@ -74,6 +77,13 @@ export const Addtask = async (req, res) => {
     const { Task, Time, Category } = req.body;
 
     const date = new Date(Time);
+    const isAdded = await TodoModel.findOne({
+      User: UserId,
+      Todos: { $elemMatch: { Time: date } }
+    });
+    if(isAdded){
+      return res.json({message:"Task Already added to that time",status:false})
+    }
     const currentDate = moment().utcOffset("+5:30");
 
     // Check if date is valid
@@ -113,19 +123,11 @@ export const Addtask = async (req, res) => {
       });
       await newTodo.save();
     } else {
-      const isAdded = await TodoModel.findOne({
-        User: UserId,
-        Todos: { $elemMatch: { Time: date } },
-      });
+     
 
       if (!isAdded) {
         await TodoModel.updateOne({ User: UserId }, { $push: { Todos: { Task, Time: date, Category } } });
-      } else {
-        return res.status(400).json({
-          message: "Task Already added to that time",
-          status: false
-        })
-      }
+      } 
     }
 
     return res.status(200).json({ message: "Task Added successfully", status: true });
@@ -362,93 +364,18 @@ export const FinishTask = async (req, res) => {
       },
       { "Todos.$": 1 }
     );
-
     const Taskname = task.Todos[0].Task;
+const htmlData=await fs.readFile('./views/EmailTemplate.hbs','utf-8')
+const template=Handlebars.compile(htmlData)
+const html=template({Taskname:Taskname})
+ 
     const MailOptions = {
       from: "bharathijawahar583@gmail.com",
       to: ReceiverEmail,
       subject: " Task Completed!",
-      html: `
-      <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              margin: 0;
-              padding: 0;
-              background-color: #f9f9f9;
-            }
-            .container {
-              width: 100%;
-              max-width: 600px;
-              margin: 0 auto;
-              background: #ffffff;
-              border: 1px solid #dddddd;
-              border-radius: 8px;
-              overflow: hidden;
-            }
-            .header {
-              background: #007bff;
-              color: #ffffff;
-              padding: 20px;
-              text-align: center;
-            }
-            .header h1 {
-              margin: 0;
-              font-size: 24px;
-            }
-            .content {
-              padding: 20px;
-            }
-            .content h2 {
-              font-size: 20px;
-              color: #333333;
-            }
-            .content p {
-              font-size: 16px;
-              color: #666666;
-              line-height: 1.5;
-            }
-            .footer {
-              background: #f1f1f1;
-              color: #888888;
-              padding: 10px;
-              text-align: center;
-              font-size: 14px;
-            }
-            .button {
-              display: inline-block;
-              padding: 10px 20px;
-              font-size: 16px;
-              color: #ffffff;
-              background: #007bff;
-              text-decoration: none;
-              border-radius: 4px;
-            }
-            .button:hover {
-              background: #0056b3;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Task Completed!</h1>
-            </div>
-            <div class="content">
-              <h2>Congratulations!</h2>
-              <p>You have successfully completed the task: <strong>${Taskname}</strong>.</p>
-              <p>Great job on finishing this task! Keep up the excellent work.</p>
-             
-            </div>
-            <div class="footer">
-             
-              <p>If you have any questions, please contact support at <a href="mailto:support@example.com">support@example.com</a>.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `,
+      html:html
+      
+    
     };
 
     const SentMail = await transporter.sendMail(MailOptions);
