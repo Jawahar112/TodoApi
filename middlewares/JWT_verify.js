@@ -1,11 +1,11 @@
 import { VerifyToken } from "../helpers/Jwt_helper.js";
 export const VerifyUser = async (req, res, next) => {
   try {
-    const Token = req.headers.authorization;
+    const Token = req.headers.authorization || req.headers.authorization;
     if (!Token) {
       return res
         .status(400)
-        .json({ Message: "Token Must Be Provided", status: false });
+        .json({ message: "Token Must Be Provided", status: false });
     }
     const User = await VerifyToken(Token);
 
@@ -15,6 +15,6 @@ export const VerifyUser = async (req, res, next) => {
   } catch (error) {
     return res
       .status(400)
-      .json({ Error: "Token Error", message: error.message });
+      .json({ error: "Token Error", message: error.message });
   }
 };
