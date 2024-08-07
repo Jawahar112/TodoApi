@@ -11,8 +11,7 @@ try {
  }
 }
 export const ValidateRegister=(req,res,next)=>{
-    
-   try {
+    try {
      const{error}=RegisterSchema.validate(req.body)
      if(error) return res.status(400).json({message:error.message,status:false})
          next()

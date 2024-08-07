@@ -2,26 +2,22 @@ import express from "express"
 import 'dotenv/config'
 import { connectDB } from "./configs/Mongodbconfig.js"
 import  Router  from "./Routes/userRouter.js"
-import cors from 'cors'
 const app=express()
 
 /* middlewares  */
+
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.set('view engine','handlebars')
 app.use('/api/',Router)
-
 app.use('*', function(req, res){
 
     res.status(404).json({message:'Page Not Found 404'});
   });
-  app.use((err, req, res, next) => {
-    console.error(err.stack); // Log error details for debugging
-    res.status(500).json({
-      error: 'An unexpected error occurred. Please try again later.',
-  });
-  })
+ 
+
   app.disable('x-powered-by');
 const PORT=process.env.PORT || 3000;
 connectDB()
