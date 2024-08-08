@@ -27,12 +27,12 @@ export const Register = async (req, res) => {
     await NewUser.save();
     response.message = "User Registration was sucessful";
     response.statusCode = 200;
-    response.status = false;
+    response.status = true;
 
   } catch (error) {
-    error.message=error.message || response.message,
-    error.status=false
-    error.statusCode=500
+    response.message=error.message || response.message,
+   
+    response.statusCode=response.statusCode || error.statusCode
 }
  return res.status(response.statusCode).json(response)
 };
@@ -60,15 +60,15 @@ export const Login = async (req, res) => {
       options: { expiresIn: "5h" },
       payload: { UserId: user._id },
     });
- response.message="Login sucesfull"
+ response.message="Login was successfull"
  response.status=true
  response.statusCode=200
  response.token=token
   } catch (error) {
     console.log(error);
-     response.message=error.message || response.message,
-    response.status=false
-    response.statusCode=500
+     response.message=error.message || response.message
+  
+     response.statusCode=response.statusCode || error.statusCode
   }
   return res.status(response.statusCode).json(response)
 }

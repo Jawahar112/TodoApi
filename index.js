@@ -3,11 +3,6 @@ import 'dotenv/config'
 import { connectDB } from "./configs/Mongodbconfig.js"
 import  Router  from "./Routes/userRouter.js"
 const app=express()
-
-/* middlewares  */
-
-
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.set('view engine','handlebars')

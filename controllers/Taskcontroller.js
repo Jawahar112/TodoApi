@@ -23,7 +23,7 @@ export const Addtask = async (req, res, next) => {
     if (isAdded) {
       return res
         .status(200)
-        .json({ message: "Task already addded to that time", status: false });
+        .json({ message: "Task already addded to that time", status: false,statusCode:200 });
     }
     const currentDate = moment().utc(new Date()).utcOffset("+5:30");
 
@@ -47,6 +47,7 @@ export const Addtask = async (req, res, next) => {
       return res.status(200).json({
         message: "There is a task already added before  few minutes",
         status: false,
+        statusCode:200
       });
     }
 
@@ -71,44 +72,53 @@ export const Addtask = async (req, res, next) => {
     response.statusCode = 200;
     response.message = "Task added sucessfully";
   } catch (error) {
-    response.message = error.message;
+    response.statusCode =  error.statusCode||response.statusCode ;
+    response.message = error.message || response.message;
   }
   return res.status(response.statusCode).json(response);
-};
+}
 
 export const GetAllTasks = async (req, res) => {
-  const response={
+  const response = {
     status: false,
     statusCode: 500,
     data: {},
     message: "Unprocessable Entity",
   }
+  
   try {
     const UserId = req.UserId;
-    const {StartingTime }= req.query;
-    const {EndingTime}=req.query;
-    //2024-08-07T11:30:00.000+00:00 --format of date
-    const date=new Date("2024-08-07")
-    const date2=`${date.getFullYear()}-0${date.getMonth()}-0${date.getDay()}T23:59:59.000+00:00`
+    const StartingTime = moment(new Date())
+      .set({ hours: 0, minutes: 0, seconds: 0 })
+      .utc(new Date())
+      .utcOffset("+5:30")
+      .toDate()
 
+    const EndingTime = moment(new Date())
+      .set({ hours: 23, minutes: 59, seconds: 59 })
+      .utc(new Date())
+      .utcOffset("+5:30")
+      .toDate();
+    console.log(StartingTime, EndingTime);
 
-    // Create a Moment object for the specified date
-// Format the date to the desired end-of-day format
-// const date = moment("2024-08-07");
-// const date2 = date.endOf('day').format("YYYY-MM-DDTHH:mm:ss.SSSZ");
-// console.log(new Date(date2));
-const Tasks = await TodoModel.aggregate([
+    const Tasks = await TodoModel.aggregate([
       {
         $match: {
           User: mongoose.Types.ObjectId.createFromHexString(UserId),
 
-          "Todos.Time": { $gte: new Date(StartingTime), $lte:new Date( EndingTime) },
+          "Todos.Time": {
+            $gte: StartingTime,
+            $lte: EndingTime,
+          },
         },
       },
       { $unwind: "$Todos" },
       {
         $match: {
-          "Todos.Time": { $gte:new Date( StartingTime), $lte: new Date(EndingTime) },
+          "Todos.Time": {
+            $gte: StartingTime,
+            $lte: EndingTime,
+          },
         },
       },
       { $sort: { "Todos.Time": 1 } },
@@ -118,34 +128,34 @@ const Tasks = await TodoModel.aggregate([
           User: { $first: "$User" },
 
           Todos: { $push: "$Todos" },
-        }
-      }
+        },
+      },
     ]);
-    if (!Tasks||!Tasks.length) {
+    if (!Tasks || !Tasks.length) {
       return res.status(200).json({
         message: "No tasks added to the todo list",
         status: false,
         data: Tasks,
       });
     }
-      response.message= "Data retrieved successfully",
-      response.status= true,
-      response.data= Tasks,
-      response.statusCode=200
-    
+    (response.message = "Data retrieved successfully"),
+      (response.status = true),
+      (response.data = Tasks),
+      (response.statusCode = 200);
   } catch (error) {
-   response.message=error.message || response.message
+    response.statusCode = response.statusCode || error.statusCode;
+    response.message = error.message || response.message;
   }
-  return res.status(response.statusCode).json(response)
+  return res.status(response.statusCode).json(response);
 };
 
 export const GetFinisedTasks = async (req, res) => {
-  const response={
+  const response = {
     status: false,
     statusCode: 500,
     data: {},
     message: "Unprocessable Entity",
-  }
+  };
   try {
     const UserId = req.UserId;
     const Tasks = await TodoModel.aggregate([
@@ -176,23 +186,24 @@ export const GetFinisedTasks = async (req, res) => {
         status: false,
       });
     }
-   response.statusCode=200
-   response.Tasks=Tasks;
-   response.message="Data retreived sucessfully";
-   response.status=true;
+    response.statusCode = 200;
+    response.Tasks = Tasks;
+    response.message = "Data retreived sucessfully";
+    response.status = true;
   } catch (error) {
-    response.message=error.message || response.message
+    response.statusCode = error.statusCode||response.statusCode ;
+    response.message = error.message || response.message;
   }
-  return res.status(response.statusCode).json(response)
-}
+  return res.status(response.statusCode).json(response);
+};
 
 export const GetPendingTasks = async (req, res) => {
-  const response={
+  const response = {
     status: false,
     statusCode: 500,
     data: {},
     message: "Unprocessable Entity",
-  }
+  };
 
   try {
     const UserId = req.UserId;
@@ -222,24 +233,23 @@ export const GetPendingTasks = async (req, res) => {
         status: false,
       });
     }
-     response.statusCode=200
-      response.message="Data retreived sucessfully",
-     response.status= true,
-      response.Tasks= Tasks
-  
-   } catch (error) {
-    response.message=error.message || response.message
+    response.statusCode = 200;
+    (response.message = "Data retreived sucessfully"),
+      (response.status = true),
+      (response.Tasks = Tasks);
+  } catch (error) {
+    response.statusCode = error.statusCode||response.statusCode ;
+    response.message = error.message || response.message;
   }
-  return res.status(response.statusCode).json(response)
-}
-
+  return res.status(response.statusCode).json(response);
+};
 export const deleteTask = async (req, res) => {
-  const response={
+  const response = {
     status: false,
     statusCode: 500,
     data: {},
     message: "Unprocessable Entity",
-  }
+  };
   try {
     const UserId = req.UserId;
     const { taskId } = req.params;
@@ -248,34 +258,42 @@ export const deleteTask = async (req, res) => {
       { $pull: { Todos: { _id: taskId } } }
     );
     if (!deletedTask || !deletedTask.modifiedCount) {
-      return res.json({ message: "Task Not Found or Server Error" });
+      return res.status(400).json({ message: "Task Not Found or Server Error",status:false,statusCode:200 });
     }
-    response. message= "Task deleted sucessfully",
-    response.status= true,
-    response.statusCode=200 
+    response.message = "Task deleted sucessfully"
+      response.status = true
+        response.statusCode = 200
   } catch (error) {
-    response.message=error.message || response.message
+    response.statusCode = error.statusCode||response.statusCode ;
+    response.message = error.message || response.message;
   }
+  return res.status(response.statusCode).json(response)
 };
 
 export const EditTask = async (req, res) => {
-  const response={
+  const response = {
     status: false,
     statusCode: 500,
     data: {},
     message: "Unprocessable Entity",
-  }
+  };
   try {
     const UserId = req.UserId;
-
     const { taskId } = req.params;
     const fields = req.query;
 
     if (!fields || !Object.keys(fields).length) {
-     throw new customError.BadRequestError("field_is_required")
+      throw new customError.BadRequestError("field_is_required");
     }
     const ToupdateFields = {};
     for (const key in fields) {
+      if (!fields[key]) {
+        return res.status(400).json({
+          message: "Field value should not empty",
+          status: false,
+          statusCode: 400,
+        });
+      }
       ToupdateFields[`Todos.$.${key}`] = fields[key];
     }
 
@@ -286,30 +304,34 @@ export const EditTask = async (req, res) => {
       },
       {
         $set: ToupdateFields,
-      }
+      },
+      { runValidators: true }
     );
 
     if (!UpdatedTask.modifiedCount) {
       return res.status(400).json({
         message: "Task not found or Already updated",
         status: false,
+        Ismodified: false,
       });
     }
-   response.status=true
-   response.statusCode=200
-   response.message="Task deleted sucessfully"
+    response.status = true;
+    response.statusCode = 200;
+    response.message = "Task Updated sucessfully";
+    response.Ismodified = true;
   } catch (error) {
-    response.message=error.message || response.message
+    response.statusCode = error.statusCode || response.statusCode;
+    response.message = error.message || response.message;
   }
-  return res.status(response.statusCode).json(response)
+  return res.status(response.statusCode).json(response);
 };
 export const FinishTask = async (req, res) => {
-  const response={
+  const response = {
     status: false,
     statusCode: 500,
     data: {},
     message: "Unprocessable Entity",
-  }
+  };
   try {
     const UserId = req.UserId;
     const { taskId } = req.params;
@@ -355,39 +377,42 @@ export const FinishTask = async (req, res) => {
       return res.json({ message: "Email sending failed", status: false });
     }
 
-    response.statusCode=200
-      response.message= "Task Updated and  confirmation mail sended to user"
-      response.status= true
-  
+    response.statusCode = 200;
+    response.message = "Task Updated and  confirmation mail sended to user";
+    response.status = true;
   } catch (error) {
-    response.message=error.message || response.message
+    response.statusCode = error.statusCode||response.statusCode ;
+    response.message = error.message || response.message;
   }
 };
 
 export const SearchTask = async (req, res) => {
- 
-  const response={
+  const response = {
     status: false,
     statusCode: 500,
     data: {},
     message: "Unprocessable Entity",
-  }
+  };
   try {
     const UserId = req.UserId;
     let { From, To } = req.query;
-    const StartDate = new Date(From);
 
-    
-    const EndDate = new Date(To);
-    EndDate.setHours(23)
-  console.log(EndDate.getHours);
-  
- 
+    const StartDate = moment(From)
+      .set({ hours: 0, minutes: 0, seconds: 0 })
+      .utc(From)
+      .utcOffset("+5:30")
+      .toDate();
+    const EndingTime = moment(To)
+      .set({ hours: 23, minutes: 59, seconds: 59 })
+      .utc(To)
+      .utcOffset("+5:30")
+      .toDate();
+
     const Query_result = await TodoModel.aggregate([
       {
         $match: {
           User: mongoose.Types.ObjectId.createFromHexString(UserId),
-          "Todos.Time": { $gte: StartDate, $lte: EndDate },
+          "Todos.Time": { $gte: StartDate, $lte: EndingTime },
         },
       },
       {
@@ -399,7 +424,7 @@ export const SearchTask = async (req, res) => {
               cond: {
                 $and: [
                   { $gte: ["$$todo.Time", StartDate] },
-                  { $lte: ["$$todo.Time", EndDate] },
+                  { $lte: ["$$todo.Time", EndingTime] },
                 ],
               },
             },
@@ -409,27 +434,31 @@ export const SearchTask = async (req, res) => {
     ]);
 
     if (!Query_result || !Query_result.length) {
-      return res.json({
-        message: "No tasks found in that time",
+      return res.status(200).json({
+        message: "No tasks found in between time",
         status: false,
+        statusCode: 200,
       });
     }
 
-    return res.status(200).json({
-      message: "Tasks fetched successfully",
-      data: Query_result,
-      status: true,
-    });
+    response.message = "Tasks fetched successfully";
+    response.data = Query_result;
+    response.status = true;
+    response.statusCode = 200;
   } catch (error) {
-    console.error("Error fetching tasks:", error);
-    return res
-      .status(500)
-      .json({ error: "Internal Server 500  Error", message: error.message });
+    response.message = error.message || response.message;
+    response.statusCode = error.statusCode || response.statusCode;
   }
+  return res.status(response.statusCode).json(response);
 };
 
 export const getTask = async (req, res) => {
- 
+  const response = {
+    status: false,
+    statusCode: 500,
+    data: {},
+    message: "Unprocessable Entity",
+  };
   try {
     const UserId = req.UserId;
 
@@ -440,17 +469,18 @@ export const getTask = async (req, res) => {
         User: mongoose.Types.ObjectId.createFromHexString(UserId),
         "Todos._id": taskId,
       },
-      { Todos: 1 }
+      { "Todos.$": 1 }
     );
-    if (!Task || Task.Todos.length === 0) {
+    if (!Task || !Task.Todos.length) {
       return res.json({ message: "Task not Found", status: false });
     }
-    return res
-      .status(200)
-      .json({ message: "Data fetched sucessfully", status: true, data: Task });
+    response.message = "Data fetched sucessfully";
+    response.status = true;
+    response.data = Task;
+    response.statusCode = 200;
   } catch (error) {
-    return res
-      .status(500)
-      .json({ Error: "Internal Server Error", message: error.message });
+    response.statusCode = error.statusCode||response.statusCode ;
+    response.message = error.message || response.message;
   }
+  return res.status(response.statusCode).json(response);
 };
