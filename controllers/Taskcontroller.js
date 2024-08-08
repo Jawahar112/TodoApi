@@ -11,7 +11,7 @@ export const Addtask = async (req, res, next) => {
     statusCode: 500,
     data: {},
     message: "Unprocessable Entity",
-  };
+  }
   try {
     const { UserId } = req;
     const { Task, Time, Category } = req.body;
@@ -67,7 +67,6 @@ export const Addtask = async (req, res, next) => {
         );
       }
     }
-
     response.status = true;
     response.statusCode = 200;
     response.message = "Task added sucessfully";
@@ -91,15 +90,16 @@ export const GetAllTasks = async (req, res) => {
     const StartingTime = moment(new Date())
       .set({ hours: 0, minutes: 0, seconds: 0 })
       .utc(new Date())
-      .utcOffset("+5:30")
+     
       .toDate()
 
     const EndingTime = moment(new Date())
       .set({ hours: 23, minutes: 59, seconds: 59 })
       .utc(new Date())
-      .utcOffset("+5:30")
+      
       .toDate();
-    console.log(StartingTime, EndingTime);
+
+  
 
     const Tasks = await TodoModel.aggregate([
       {
@@ -227,10 +227,11 @@ export const GetPendingTasks = async (req, res) => {
       },
     ]);
     if (!Tasks || !Tasks.length) {
-      return res.json({
+      return res.statusCode(200).json({
         message: "No pending tasks",
         data: Tasks,
-        status: false,
+         
+
       });
     }
     response.statusCode = 200;
@@ -258,7 +259,7 @@ export const deleteTask = async (req, res) => {
       { $pull: { Todos: { _id: taskId } } }
     );
     if (!deletedTask || !deletedTask.modifiedCount) {
-      return res.status(400).json({ message: "Task Not Found or Server Error",status:false,statusCode:200 });
+      throw new customError.NotFoundError("Task not Found")
     }
     response.message = "Task deleted sucessfully"
       response.status = true
@@ -309,7 +310,7 @@ export const EditTask = async (req, res) => {
     );
 
     if (!UpdatedTask.modifiedCount) {
-      return res.status(400).json({
+      return res.status(404).json({
         message: "Task not found or Already updated",
         status: false,
         Ismodified: false,
@@ -437,7 +438,7 @@ export const SearchTask = async (req, res) => {
       return res.status(200).json({
         message: "No tasks found in between time",
         status: false,
-        statusCode: 200,
+        statusCode: 200
       });
     }
 
@@ -472,7 +473,7 @@ export const getTask = async (req, res) => {
       { "Todos.$": 1 }
     );
     if (!Task || !Task.Todos.length) {
-      return res.json({ message: "Task not Found", status: false });
+      throw new customError.NotFoundError("Task not found")
     }
     response.message = "Data fetched sucessfully";
     response.status = true;

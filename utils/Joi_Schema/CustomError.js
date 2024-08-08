@@ -11,25 +11,19 @@
  class BadRequestError extends CustomError {
     constructor(message) {
       super(message);
-   
       this.statusCode=400
     }
   }
-  class typeError extends CustomError {
-    constructor(message) {
-      super(message);
-      this.statusCode = 400;
-    }
-  }
+
   class NotFoundError extends CustomError {
     constructor(message) {
       super(message);
       this.statusCode = 404;
     }
   }
+  
   export const customError={
     BadRequestError:BadRequestError,
-    typeError:typeError,
     NotFoundError:NotFoundError
 }
  

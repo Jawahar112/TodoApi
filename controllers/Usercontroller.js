@@ -2,8 +2,7 @@ import UserModel from "../models/Users.js";
 import { GenerateToken } from "../helpers/Jwt_helper.js";
 import { customError } from "../utils/Joi_Schema/CustomError.js"
 export const Register = async (req, res) => {
-
-  const response = {
+    const response = {
     status: false,
     statusCode: 500,
     data: {},
