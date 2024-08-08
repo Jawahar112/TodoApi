@@ -5,13 +5,16 @@ import  Router  from "./Routes/userRouter.js"
 const app=express()
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
+app.set('view engine','handlebars')
 app.use('/api/',Router)
 app.use('*', function(req, res){
+
     res.status(404).json({message:'Page Not Found 404'});
   });
+ 
 
-const PORT=process.env.PORT || 3000
+  app.disable('x-powered-by');
+const PORT=process.env.PORT || 3000;
 connectDB()
 app.listen(PORT,(err)=>{
     if(err)console.log(err);

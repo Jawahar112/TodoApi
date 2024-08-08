@@ -1,5 +1,5 @@
 import express from "express";
-import { Addtask,deleteTask,EditTask,FinishTask,GetAllTasks,GetFinisedTasks, GetPendingTasks, getTask, SearchTask} from "../controllers/Usercontroller.js";
+import { Addtask,deleteTask,EditTask,FinishTask,GetAllTasks,GetFinisedTasks, GetPendingTasks, getTask, SearchTask} from "../controllers/Taskcontroller.js";
  const Router=express.Router()
 import { VerifyUser } from "../middlewares/JWT_verify.js";
  import { Login,Register } from "../controllers/Usercontroller.js"
